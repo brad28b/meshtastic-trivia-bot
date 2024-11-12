@@ -1,5 +1,5 @@
 # meshtastic-trivia-bot
-A trivia bot designed to work on the Meshtastic network. Currenly only tested on Linux.
+A trivia bot designed to work on the Meshtastic network. Currently only tested on Linux.
 
 The python script 'meshtrivia.py' connects to your Meshtastic node, and allows other nodes to play a game of trivia with it, by sending PM/DMs to it.
 
