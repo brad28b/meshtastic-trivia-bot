@@ -1,5 +1,5 @@
 # meshtastic-trivia-bot
-A trivia bot designed to work on the Meshtastic network. Pre-load with 150 trivia questions.
+A trivia bot designed to work on the Meshtastic network. Pre-loaded with 150 trivia questions.
 
 Keeps track of a leaderboard.
 
