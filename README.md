@@ -1,7 +1,7 @@
 # meshtastic-trivia-bot
 A trivia bot designed to work on the Meshtastic network.
 
-The python script meshttrivia.py connects to your Meshtastic node, and allows other nodes to play a game of trivia with it, by sending PM/DMs to it.
+The python script 'meshtrivia.py' connects to your Meshtastic node, and allows other nodes to play a game of trivia with it, by sending PM/DMs to it.
 
 # Installation
 
@@ -29,7 +29,7 @@ To run the Triva Bot:
 To quit the trivia bot, use CTRL-C.
 
 
-# Keep running persistenly
+# Keep running persistently
 
 * ./start_trivia_bot.sh
 
