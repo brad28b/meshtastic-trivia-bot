@@ -1,5 +1,9 @@
 # meshtastic-trivia-bot
-A trivia bot designed to work on the Meshtastic network. Currently only tested on Linux.
+A trivia bot designed to work on the Meshtastic network. Pre-load with 150 trivia questions.
+
+Keeps track of a leaderboard.
+
+Currently only tested on Linux.
 
 The python script 'meshtrivia.py' connects to your Meshtastic node, and allows other nodes to play a game of trivia with it, by sending PM/DMs to it.
 
@@ -27,6 +31,8 @@ To run the Triva Bot:
 ![Screenshot 2024-11-12 143016](https://github.com/user-attachments/assets/46ccc792-6250-4e26-aeb1-d01b520d0d9e)
 
 To quit the trivia bot, use CTRL-C.
+
+![466377238_1765548554279321_3529423627956944720_n](https://github.com/user-attachments/assets/d585ef94-cfc0-45b2-a66d-4fc818062d1f)
 
 
 # Keep running persistently
