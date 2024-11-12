@@ -4,7 +4,7 @@
 """
 Meshtastic Trivia Bot
 Version: 1.0
-Author: Claude
+Author: Brad Hughes
 Description: A trivia bot for Meshtastic networks with persistent statistics and automatic reconnection
 License: MIT
 """
