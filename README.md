@@ -18,6 +18,8 @@ The following instructions are for Linux. It does work on Windows with most of t
 
 First decide if you will connect to your Meshtastic node via serial or tcp, and then edit and save the meshtrivia.py file with your serial or tcp credentials.
 
+# Linux only
+
 Then give execute permissions to start_trivia_bot.sh:
 
 * chmod +x start_trivia_bot.sh
@@ -35,7 +37,7 @@ To quit the trivia bot, use CTRL-C.
 ![466377238_1765548554279321_3529423627956944720_n](https://github.com/user-attachments/assets/d585ef94-cfc0-45b2-a66d-4fc818062d1f)
 
 
-# Keep running persistently
+# Keep running persistently (Linux only)
 
 * ./start_trivia_bot.sh
 
