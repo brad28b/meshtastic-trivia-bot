@@ -28,7 +28,7 @@ To run the Triva Bot:
 
 * python meshtrivia.py
   
-![Screenshot 2024-11-12 143016](https://github.com/user-attachments/assets/46ccc792-6250-4e26-aeb1-d01b520d0d9e)
+![Screenshot 2024-11-12 152504](https://github.com/user-attachments/assets/2dd67008-cdf8-4038-87e5-e3529a46a677)
 
 To quit the trivia bot, use CTRL-C.
 
