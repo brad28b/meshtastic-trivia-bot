@@ -16,7 +16,7 @@ The python script 'meshtrivia.py' connects to your Meshtastic node, and allows o
 
 # Configuration
 
-First decide if you will connect to your Meshtastic node via serial or TCP, and then edit and save the meshtrivia.py file with your serial or tcp credentials.
+First decide if you will connect to your Meshtastic node via serial or tcp, and then edit and save the meshtrivia.py file with your serial or tcp credentials.
 
 Then give execute permissions to start_trivia_bot.sh:
 
