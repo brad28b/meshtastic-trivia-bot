@@ -5,6 +5,7 @@
 Meshtastic Trivia Bot
 Version: 1.0
 Author: Brad Hughes
+Github: https://github.com/brad28b
 Description: A trivia bot for Meshtastic networks with persistent statistics and automatic reconnection
 License: MIT
 """
