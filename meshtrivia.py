@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 """
 Meshtastic Trivia Bot
-Supports both TCP and Serial connections to Meshtastic nodes
-Includes persistent statistics storage
-Author: Brad Hughes
-Github: https://github.com/brad28b
+Version: 1.0
+Author: Claude
+Description: A trivia bot for Meshtastic networks with persistent statistics and automatic reconnection
+License: MIT
 """
 
 import time
@@ -20,16 +22,12 @@ import threading
 
 # Connection Configuration
 CONNECTION_TYPE = "tcp"  # Options: "tcp" or "serial"
-# For TCP connection
 NODE_IP = "192.168.1.20"  # Replace with your Meshtastic node's IP address
-# For Serial connection
-SERIAL_PORT = "/dev/ttyACM0"  # Replace with your serial port
-# Common settings
+SERIAL_PORT = "/dev/ttyUSB0"  # Replace with your serial port
 CHANNEL_INDEX = 0  # Replace with your channel index
-# Stats file location
 STATS_FILE = "trivia_stats.json"  # File to store statistics
 
-# Trivia Questions Database
+# Questions Database
 QUESTIONS = [
     # Science & Nature (30 questions)
     ("Chemical symbol for gold?", "au"),
@@ -197,34 +195,74 @@ class TriviaBot:
         self.channel_index = CHANNEL_INDEX
         self.interface = None
         self.stats_file = STATS_FILE
+        self.connected = False
+        self.reconnect_interval = 10  # seconds between reconnection attempts
+        self.should_run = True  # Control flag for monitoring thread
+        
+        self.connect()
+            
+        self.active_questions: Dict[str, Tuple[str, str, float]] = {}
+        self.playing_users: set = set()
+        
+        # Load saved statistics
+        self.user_stats = self.load_stats()
+        print(f"Loaded statistics for {len(self.user_stats)} players")
+        
+        print("Subscribing to message events...")
+        pub.subscribe(self.on_receive, "meshtastic.receive")
+        print("Subscription complete")
+        
+        self.questions = QUESTIONS
+        
+        # Start connection monitoring thread
+        self.monitor_thread = threading.Thread(target=self.monitor_connection, daemon=True)
+        self.monitor_thread.start()
 
+    def connect(self) -> bool:
+        """Attempt to connect to the Meshtastic device"""
         try:
-            # Initialize interface based on connection type
+            if self.interface:
+                try:
+                    self.interface.close()
+                except:
+                    pass
+                    
             if CONNECTION_TYPE.lower() == "tcp":
                 print(f"Connecting via TCP to {NODE_IP}...")
                 self.interface = TCPInterface(hostname=NODE_IP)
             else:
                 print(f"Connecting via Serial to {SERIAL_PORT}...")
                 self.interface = SerialInterface(SERIAL_PORT)
-
+                
             # Wait a moment for the interface to initialize
             time.sleep(2)
+            self.connected = True
+            print("Connection established successfully")
+            return True
+            
         except Exception as e:
-            print(f"Error initializing interface: {e}")
-            raise
+            print(f"Error connecting to device: {e}")
+            self.connected = False
+            return False
 
-        self.active_questions: Dict[str, Tuple[str, str, float]] = {}
-        self.playing_users: set = set()
-
-        # Load saved statistics
-        self.user_stats = self.load_stats()
-        print(f"Loaded statistics for {len(self.user_stats)} players")
-
-        print("Subscribing to message events...")
-        pub.subscribe(self.on_receive, "meshtastic.receive")
-        print("Subscription complete")
-
-        self.questions = QUESTIONS
+    def monitor_connection(self):
+        """Monitor connection and attempt reconnection if needed"""
+        while self.should_run:
+            try:
+                if not self.connected:
+                    print("Connection lost, attempting to reconnect...")
+                    if self.connect():
+                        print("Reconnection successful")
+                        # Resubscribe to messages
+                        pub.subscribe(self.on_receive, "meshtastic.receive")
+                    else:
+                        print(f"Reconnection failed, waiting {self.reconnect_interval} seconds...")
+                        time.sleep(self.reconnect_interval)
+                time.sleep(1)
+            except Exception as e:
+                print(f"Error in connection monitor: {e}")
+                self.connected = False
+                time.sleep(self.reconnect_interval)
 
     def load_stats(self) -> Dict:
         """Load statistics from file"""
@@ -247,16 +285,16 @@ class TriviaBot:
             if os.path.exists(self.stats_file):
                 backup_file = f"{self.stats_file}.backup"
                 os.replace(self.stats_file, backup_file)
-
+            
             # Save current stats
             with open(self.stats_file, 'w') as f:
                 json.dump(self.user_stats, f, indent=2)
             print("Statistics saved successfully")
-
+            
             # Remove backup if save was successful
             if os.path.exists(f"{self.stats_file}.backup"):
                 os.remove(f"{self.stats_file}.backup")
-
+                
         except Exception as e:
             print(f"Error saving stats: {e}")
             # If there was an error and we have a backup, restore it
@@ -275,7 +313,7 @@ class TriviaBot:
             if not node_id:  # Check for None or empty string
                 print(f"Invalid node ID: {node_id}")
                 return None
-
+                
             if node_id.startswith('!'):
                 return int(node_id[1:], 16)
             return int(node_id, 16)
@@ -289,21 +327,26 @@ class TriviaBot:
     def send_message(self, message: str, to_node: str):
         """Send a message to a specific node"""
         try:
+            if not self.connected:
+                print("Cannot send message: Not connected")
+                return
+                
             if not to_node:  # Check for None or empty string
                 print("Cannot send message: Invalid node ID (None)")
                 return
-
+                
             print(f"Sending message to {to_node}: {message}")
             node_num = self.get_node_num(to_node)
             if node_num is None:
                 print(f"Invalid node ID format: {to_node}")
                 return
-
+                
             print(f"Converting node ID {to_node} to number: {node_num}")
             self.interface.sendText(message, node_num, channelIndex=self.channel_index)
             print("Message sent successfully")
         except Exception as e:
             print(f"Error sending message: {e}")
+            self.connected = False
             import traceback
             print(traceback.format_exc())
 
@@ -312,13 +355,22 @@ class TriviaBot:
         if not node_id:  # Check for None or empty string
             return
 
+        # Remove active question if exists
         if node_id in self.active_questions:
             del self.active_questions[node_id]  # Remove active question without counting it
-        self.playing_users.discard(node_id)  # Remove from playing users
+
+        # Remove from playing users set
+        self.playing_users.discard(node_id)
+
+        # Update last played timestamp in stats if user exists
         if node_id in self.user_stats:
             self.user_stats[node_id]["last_played"] = datetime.now().isoformat()
             self.save_stats()
+
+        # Send goodbye message
         self.send_message("Thanks for playing! Send any message to start a new game.", node_id)
+
+        print(f"Player {node_id} has quit the game")
 
     def send_new_question(self, node_id: str):
         """Send a new random question to a node"""
@@ -537,6 +589,15 @@ class TriviaBot:
             import traceback
             print(traceback.format_exc())
 
+    def cleanup(self):
+        """Cleanup resources before shutdown"""
+        self.should_run = False  # Stop the monitoring thread
+        if self.interface:
+            try:
+                self.interface.close()
+            except:
+                pass
+
 def main():
     bot = None
     try:
@@ -569,10 +630,10 @@ def main():
         import traceback
         print(traceback.format_exc())
     finally:
-        if bot and hasattr(bot, 'interface') and bot.interface:
-            print("Closing interface...")
-            bot.interface.close()
-            print("Interface closed")
+        if bot:
+            print("Cleaning up...")
+            bot.cleanup()
+            print("Cleanup complete")
 
 if __name__ == "__main__":
     main()
