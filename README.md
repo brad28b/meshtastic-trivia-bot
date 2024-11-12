@@ -3,9 +3,9 @@ A trivia bot designed to work on the Meshtastic network. Pre-loaded with 150 tri
 
 Keeps track of a leaderboard.
 
-The following instructions are for Linux. It does work on Windows with most of the below commands, except for running persistently (work that out yourself for Windows).
-
 The python script 'meshtrivia.py' connects to your Meshtastic node, and allows other nodes to play a game of trivia with it, by sending PM/DMs to it.
+
+The following instructions are for Linux. It does work on Windows with most of the below commands, except for running persistently (work that out yourself for Windows).
 
 # Installation
 
